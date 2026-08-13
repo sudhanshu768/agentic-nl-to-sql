@@ -1,0 +1,215 @@
+{
+  "database": "nl_to_sql",
+  "dialect": "postgresql",
+
+  "tables": {
+    "customers": {
+      "description": "Stores customer information.",
+
+      "columns": {
+        "customer_id": {
+          "type": "integer",
+          "description": "Unique identifier for a customer.",
+          "primary_key": true
+        },
+
+        "name": {
+          "type": "varchar(100)",
+          "description": "Customer name."
+        },
+
+        "email": {
+          "type": "varchar(150)",
+          "description": "Customer email address."
+        },
+
+        "city": {
+          "type": "varchar(100)",
+          "description": "City where the customer is located."
+        },
+
+        "customer_segment": {
+          "type": "varchar(50)",
+          "description": "Customer segment such as regular, premium, or business."
+        },
+
+        "created_at": {
+          "type": "timestamp",
+          "description": "Timestamp when the customer record was created."
+        }
+      }
+    },
+
+    "products": {
+      "description": "Stores products available in the store.",
+
+      "columns": {
+        "product_id": {
+          "type": "integer",
+          "description": "Unique identifier for a product.",
+          "primary_key": true
+        },
+
+        "product_name": {
+          "type": "varchar(150)",
+          "description": "Name of the product."
+        },
+
+        "category": {
+          "type": "varchar(100)",
+          "description": "Product category such as Electronics, Clothing, Home, Books, or Sports."
+        },
+
+        "unit_price": {
+          "type": "numeric(10,2)",
+          "description": "Current unit price of the product."
+        }
+      }
+    },
+
+    "orders": {
+      "description": "Stores orders placed by customers.",
+
+      "columns": {
+        "order_id": {
+          "type": "integer",
+          "description": "Unique identifier for an order.",
+          "primary_key": true
+        },
+
+        "customer_id": {
+          "type": "integer",
+          "description": "Customer who placed the order.",
+          "foreign_key": "customers.customer_id"
+        },
+
+        "order_date": {
+          "type": "date",
+          "description": "Date when the order was placed."
+        },
+
+        "status": {
+          "type": "varchar(50)",
+          "description": "Order status such as completed, shipped, or cancelled."
+        },
+
+        "total_amount": {
+          "type": "numeric(12,2)",
+          "description": "Total monetary value of the complete order."
+        }
+      }
+    },
+
+    "order_items": {
+      "description": "Stores individual products contained in each order.",
+
+      "columns": {
+        "order_item_id": {
+          "type": "integer",
+          "description": "Unique identifier for an order item.",
+          "primary_key": true
+        },
+
+        "order_id": {
+          "type": "integer",
+          "description": "Order containing this item.",
+          "foreign_key": "orders.order_id"
+        },
+
+        "product_id": {
+          "type": "integer",
+          "description": "Product associated with this order item.",
+          "foreign_key": "products.product_id"
+        },
+
+        "quantity": {
+          "type": "integer",
+          "description": "Number of units purchased."
+        },
+
+        "unit_price": {
+          "type": "numeric(10,2)",
+          "description": "Price per unit when the order was placed."
+        }
+      }
+    },
+
+    "payments": {
+      "description": "Stores payment records associated with orders.",
+
+      "columns": {
+        "payment_id": {
+          "type": "integer",
+          "description": "Unique identifier for a payment.",
+          "primary_key": true
+        },
+
+        "order_id": {
+          "type": "integer",
+          "description": "Order associated with the payment.",
+          "foreign_key": "orders.order_id"
+        },
+
+        "payment_date": {
+          "type": "date",
+          "description": "Date when the payment was recorded."
+        },
+
+        "payment_method": {
+          "type": "varchar(50)",
+          "description": "Payment method such as UPI, Credit Card, Debit Card, or Net Banking."
+        },
+
+        "amount": {
+          "type": "numeric(12,2)",
+          "description": "Payment amount."
+        },
+
+        "status": {
+          "type": "varchar(50)",
+          "description": "Status of the payment."
+        }
+      }
+    }
+  },
+
+  "relationships": [
+    {
+      "from": "orders.customer_id",
+      "to": "customers.customer_id",
+      "type": "many-to-one"
+    },
+
+    {
+      "from": "order_items.order_id",
+      "to": "orders.order_id",
+      "type": "many-to-one"
+    },
+
+    {
+      "from": "order_items.product_id",
+      "to": "products.product_id",
+      "type": "many-to-one"
+    },
+
+    {
+      "from": "payments.order_id",
+      "to": "orders.order_id",
+      "type": "many-to-one"
+    }
+  ],
+
+  "business_rules": [
+    "Cancelled orders should normally be excluded when calculating sales, revenue, or customer spending unless the user explicitly asks to include cancelled orders.",
+
+    "orders.total_amount represents the total monetary value of an order.",
+
+    "For product-level or category-level revenue calculations, use order_items.quantity multiplied by order_items.unit_price.",
+
+    "Use order_items.unit_price for historical product sales calculations rather than products.unit_price because the order item stores the price at the time of purchase.",
+
+    "Customer spending can be calculated from orders.total_amount after excluding cancelled orders.",
+
+    "payments should be used when the question specifically concerns payment methods, payment amounts, or payment status."
+  ]
+}

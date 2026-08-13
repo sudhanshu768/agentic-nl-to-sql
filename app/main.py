@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 
+from app.api.routes import router
+
 
 app = FastAPI(
     title="Agentic NL-to-SQL Assistant",
@@ -7,8 +9,11 @@ app = FastAPI(
         "A schema-aware, secure, and self-correcting "
         "natural-language-to-SQL system."
     ),
-    version="0.1.0",
+    version="0.2.0",
 )
+
+
+app.include_router(router)
 
 
 @app.get("/")
